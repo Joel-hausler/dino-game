@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JSFiddle 5q09kg24</title>
+
+  <style>
+    /* CSS (JSFiddle: CSS Panel) */
+#score {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  margin: 12px 0;
+}
+
+#game {
+  width: 600px;
+  height: 300px;
+  border: 2px solid black;
+  margin: auto;
+  background-image: url("https://raw.githubusercontent.com/kriscfoster/chrome-dino-game/master/background.jpg");
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+/* Spieler */
+#player {
+  height: 75px;
+  width: 75px;
+  top: 225px;
+  left: 40px;
+  position: relative;
+  background-image: url("https://raw.githubusercontent.com/Joel-hausler/dino-game/main/Vinícius Júnior - FootyRenders.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Hindernis */
+#rock {
+  width: 50px;
+  height: 50px;
+  position: relative;
+  top: 175px;
+  left: 550px;
+  background-image: url("https://raw.githubusercontent.com/Joel-hausler/dino-game/main/FC_Barcelona_(crest).svg.png");
+  background-size: cover;
+  background-position: center;
+
+  /* Wichtig: Animation erst starten, wenn Game läuft */
+  animation: none;
+}
+
+@keyframes rock {
+  0% {
+    left: 550px;
+  }
+  100% {
+    left: -50px;
+  }
+}
+
+/* länger in der Luft */
+.jump-animation {
+  animation: jump 0.85s ease-out;
+}
+
+@keyframes jump {
+  0% {
+    top: 225px;
+  }
+  50% {
+    top: 70px;
+  }
+  75% {
+    top: 70px;
+  }
+  100% {
+    top: 225px;
+  }
+}
+
+/* Start-Overlay */
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.75);
+  font-family: Arial, sans-serif;
+  text-align: center;
+  gap: 10px;
+}
+
+#title {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#controls {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#status {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none !important;
+}
+  </style>
+
+  
+</head>
+<body>
+  <!-- HTML (JSFiddle: HTML Panel) -->
+<div id="game">
+  <div id="player"></div>
+  <div id="rock"></div>
+
+  <div id="overlay">
+    <div id="title">Dino Game</div>
+    <div id="controls">
+      Leertaste: Start / Restart<br />
+      (Pfeil nach oben): Jump<br />
+      Klick: Jump
+    </div>
+    <div id="status">Drücke Leertaste zum Starten</div>
+  </div>
+</div>
+
+<h1 id="score">0</h1>
+
+  <script>
+    // JS (JSFiddle: JavaScript Panel)
+
+const player = document.getElementById("player");
+const rock = document.getElementById("rock");
+const score = document.getElementById("score");
+const overlay = document.getElementById("overlay");
+const statusText = document.getElementById("status");
+
+// Aufgabe Schritt 1: Score initialisieren
+score.innerText = 0;
+
+let points = 0;
+let isRunning = false;
+let isGameOver = false;
+
+// Game Loop (läuft immer, zählt aber nur wenn isRunning)
+setInterval(() => {
+  if (!isRunning || isGameOver) return;
+
+  const playerTop = parseInt(window.getComputedStyle(player).getPropertyValue("top"), 10);
+  const rockLeft = parseInt(window.getComputedStyle(rock).getPropertyValue("left"), 10);
+
+  // Aufgabe Schritt 2: Score doppelt so schnell
+  points += 2;
+  score.innerText = points;
+
+  // Collision (gleiche Logik wie original, nur mit player)
+  if (rockLeft < 50 && rockLeft > 0 && playerTop > 150) {
+    endGame();
+  }
+}, 50);
+
+function startGame() {
+  isRunning = true;
+  isGameOver = false;
+
+  // Score reset (Aufgabe Schritt 1 im Kontext Start/Restart)
+  points = 0;
+  score.innerText = 0;
+
+  // Overlay ausblenden
+  overlay.classList.add("hidden");
+
+  // Rock Animation starten / neu starten
+  rock.style.animation = "none";
+  rock.offsetHeight; // reflow
+  rock.style.animation = "rock 1.33s infinite linear";
+}
+
+function endGame() {
+  isRunning = false;
+  isGameOver = true;
+
+  // Rock stoppen
+  rock.style.animation = "none";
+
+  // Overlay anzeigen
+  overlay.classList.remove("hidden");
+  statusText.innerText = "Game Over — Leertaste: Restart";
+}
+
+function jump() {
+  if (!isRunning || isGameOver) return;
+  if (player.classList.contains("jump-animation")) return;
+
+  player.classList.add("jump-animation");
+  setTimeout(() => player.classList.remove("jump-animation"), 850);
+}
+
+// Steuerung:
+// - Leertaste: Start/Restart
+// - Pfeil hoch: Jump
+document.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    event.preventDefault();
+    startGame();
+    return;
+  }
+
+  if (event.code === "ArrowUp") {
+    event.preventDefault();
+    jump();
+    return;
+  }
+});
+
+// Optional: Klick = Jump (hilft in JSFiddle/Mobile)
+document.addEventListener("click", () => {
+  jump();
+});
+  </script>
+</body>
+</html>
